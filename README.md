@@ -1,4 +1,4 @@
-# Your Scout AI 🚀
+# Your Scout AI 
 
 **"No more spray and pray. Analyze, Select, and Win."**
 
@@ -9,7 +9,7 @@
 ![Python](https://img.shields.io/badge/Python-3.14-blue)
 ![AWS CDK](https://img.shields.io/badge/AWS%20CDK-Infrastructure%20as%20Code-yellow)
 
-## 📖 Background (開発背景)
+## Background (開発背景)
 
 「転職回数が多いと、書類選考で弾かれやすい」
 そんなハンデを覆すには、**「自分のスキルセットと企業の募集用件が完璧にマッチする場所」**をピンポイントで攻めるしかありません。
@@ -17,7 +17,7 @@
 
 そこで、**「AIが私の代わりに24時間求人を監視し、勝率の高いカードだけを配ってくれる」** システムを開発しました。
 
-## ⚙️ Architecture
+## Architecture
 
 完全サーバーレス・アーキテクチャを採用し、**維持費ほぼ0円**を実現しています。
 Python 3.14の最新機能を利用するため、Lambdaは**コンテナイメージ (Docker)** でデプロイしています。
@@ -46,20 +46,20 @@ graph TD
 *   **Language**: Python 3.14.0 (Latest)
 *   **CI/CD**: GitHub Actions (Planned)
 
-## 🚀 Features
+##  Features
 
 1.  **Smart Collection**: RSSフィード等から自動で求人を収集。`ConditionExpression` を用いた効率的な重複排除。
 2.  **AI Matching**: 求人の「必須スキル」「歓迎スキル」を抽出し、事前登録したレジュメと照合。「勝てる確率」をスコアリング。
 3.  **Real-time Notification**: マッチ度が高い求人が見つかった瞬間、DynamoDB Streams駆動で通知。
 
-## 🛠 Usage
+##  Usage
 
-### Prerequisites
+## Prerequisites
 *   AWS CLI configured
 *   Docker installed
 *   CDK installed
 
-### Deploy
+## Deploy
 ```bash
 # 1. Clone
 git clone https://github.com/KitayamaRosanjin/Your-Scout-AI.git
@@ -73,7 +73,7 @@ cd cdk_app
 cdk deploy
 ```
 
-## 📝 Author
+##  Author
 **KitayamaRosanjin**
 *   20代 / エンジニア (Ex-事務職)
 *   「ないものは作る」精神でSaaS開発に挑戦中。
