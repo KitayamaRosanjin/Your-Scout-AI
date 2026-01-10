@@ -74,8 +74,10 @@ def handler(event, context):
     # Example feeds. In production, these might be loaded from another DB or Config.
     # Using 'Hacker News: Who is hiring?' search for 'python' as a demo source
     TARGET_FEEDS = [
-        "https://hnrss.org/newest?q=hiring+python",
-        # Add more feeds here
+        "https://hnrss.org/newest?q=hiring+python", # Specific
+        "https://hnrss.org/newest?q=hiring",        # Broader
+        "https://hnrss.org/whoishiring/jobs",     # Monthly Who is hiring
+        "https://hnrss.org/newest?q=remote",       # Remote jobs
     ]
     
     total_new_jobs = 0
