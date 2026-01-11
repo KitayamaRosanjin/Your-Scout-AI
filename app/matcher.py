@@ -23,37 +23,59 @@ def analyze_job_match(job_details, resume_text):
     
     title = job_details.get("title", "").lower()
     description = job_details.get("description", "").lower()
+    resume_lower = resume_text.lower()
     
-    # Mock Logic: High score if 'python' or 'aws' in title/desc
     score = 0
-    reason = "Not relevant."
+    matched_reasons = []
+
+    # Mock Logic: Check intersection of Job Requirements vs Resume Skills
+    # In a real app, an LLM would handle semantic matching here.
     
-    if "python" in title or "python" in description:
-        score += 50
-        reason = "Python skill match."
-    if "aws" in title or "aws" in description:
-        score += 30
-        reason += " AWS skill match."
-        
-    if score > 0:
-        score += 10 # Base score for being tech related matches
-        
+    # 1. Simple Keyword Matching
+    target_keywords = ["python", "aws", "docker", "cdk", "typescript", "react", "english"]
+    
+    for kw in target_keywords:
+        # If Job requires it AND Resume has it
+        if kw in (title + description) and kw in resume_lower:
+            score += 15
+            matched_reasons.append(kw)
+
+    # 2. Bonus for Certifications
+    if "certified" in resume_lower and ("aws" in title or "cloud" in title):
+        score += 10
+        matched_reasons.append("Certification Match")
+
+    final_reason = f"Skills matched: {', '.join(matched_reasons)}" if matched_reasons else "Low relevancy based on resume."
+    
     return {
-        "score": min(score, 100),
-        "reason": reason,
-        "is_match": score >= 70
+        "score": min(score, 99),
+        "reason": final_reason,
+        "is_match": score >= 30 # Threshold
     }
 
 def handler(event, context):
     print("Matcher started")
     table = get_dynamodb_table()
     
-    # User Resume (Store in SSM Parameter Store or S3 in real app)
-    # Hardcoded for portfolio MVP
-    RESUME_TEXT = """
-    Software Engineer with experience in Python, AWS.
-    Built SaaS portfolio using CDK and Lambda.
-    """
+    # 1. Try to fetch User Resume from DynamoDB (Web-updated version)
+    RESUME_ID = "MY_RESUME"
+    resume_text = ""
+    try:
+        resp = table.get_item(Key={'job_id': RESUME_ID})
+        resume_text = resp.get('Item', {}).get('text', '')
+        print("Loaded resume from DynamoDB.")
+    except Exception as e:
+        print(f"Failed to load resume from DB: {e}")
+
+    # 2. Fallback to Template if empty
+    if not resume_text:
+        print("Using default resume template.")
+        resume_text = """
+        ## Professional Summary
+        Backend Engineer with 3 years of experience specializing in Python and Cloud Architectures.
+        Passionate about building serverless applications and automating workflows.
+        ... (Please update via Web Dashboard) ...
+        """
     
     processed_count = 0
     

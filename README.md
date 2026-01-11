@@ -55,6 +55,8 @@ graph TD
     *   **Lambda Function URL** を用いたサーバーレス配信。
     *   **Safety & Domain Filter**: 不適切なコンテンツやプレスリリース記事を自動で除外するフィルタリングエンジン搭載。
     *   [Live Demo URL](https://g2euc27ywdy75lppplx646nrca0exeix.lambda-url.ap-northeast-1.on.aws/)
+5.  **Resume Management**: Webダッシュボードから職務経歴書を直接入力・更新可能。
+    *   入力されたMarkdown形式のレジュメはDynamoDBに保存され、即座にAIマッチングエンジンの判断基準として適用されます。
 
 ##  Usage
 

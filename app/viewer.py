@@ -11,40 +11,47 @@ dynamodb = boto3.resource('dynamodb')
 table_name = os.environ.get('TABLE_NAME')
 table = dynamodb.Table(table_name) if table_name else None
 
+RESUME_ID = "MY_RESUME"
+
 def handler(event, context):
     try:
-        # Determine HTTP Method (Lambda Function URL format)
+        # Determine HTTP Method
         http_method = event.get('requestContext', {}).get('http', {}).get('method', 'GET')
         
         demo_results = []
         search_keyword = ""
         user_skills = ""
+        current_resume = get_resume()
         
         if http_method == 'POST':
-            # Handle Interactive Demo Search
+            # Handle Form Submission
             body = event.get('body', '')
             if event.get('isBase64Encoded', False):
                 body = base64.b64decode(body).decode('utf-8')
             
-            # Parse form data
             params = urllib.parse.parse_qs(body)
-            search_keyword = params.get('keyword', [''])[0]
-            user_skills = params.get('skills', [''])[0]
             
-            if search_keyword:
-                demo_results = run_live_search(search_keyword, user_skills)
+            # Check if this is a Resume Update
+            if 'resume_text' in params:
+                new_resume_text = params['resume_text'][0]
+                save_resume(new_resume_text)
+                current_resume = new_resume_text # Update display
+            else:
+                # Regular Search
+                search_keyword = params.get('keyword', [''])[0]
+                user_skills = params.get('skills', [''])[0]
+                if search_keyword:
+                    demo_results = run_live_search(search_keyword, user_skills)
         
-        # Always fetch latest DB jobs for the bottom list
+        # Always fetch latest DB jobs
         db_jobs = get_db_jobs()
         
-        # Generate HTML with both results
-        html_content = generate_html(db_jobs, demo_results, search_keyword, user_skills)
+        # Generate HTML
+        html_content = generate_html(db_jobs, demo_results, search_keyword, user_skills, current_resume)
         
         return {
             "statusCode": 200,
-            "headers": {
-                "Content-Type": "text/html"
-            },
+            "headers": {"Content-Type": "text/html"},
             "body": html_content
         }
     except Exception as e:
@@ -54,11 +61,31 @@ def handler(event, context):
             "body": f"Internal Server Error: {str(e)}"
         }
 
+def get_resume():
+    if not table: return ""
+    try:
+        resp = table.get_item(Key={'job_id': RESUME_ID})
+        return resp.get('Item', {}).get('text', '')
+    except Exception as e:
+        print(f"Failed to get resume: {e}")
+        return ""
+
+def save_resume(text):
+    if not table: return
+    try:
+        table.put_item(Item={
+            'job_id': RESUME_ID,
+            'text': text,
+            'updated_at': datetime.now().isoformat()
+        })
+    except Exception as e:
+        print(f"Failed to save resume: {e}")
+
 def get_db_jobs():
     if not table: return []
     try:
         response = table.scan()
-        items = response.get('Items', [])
+        items = [i for i in response.get('Items', []) if i['job_id'] != RESUME_ID] # Exclude resume item
         items.sort(key=lambda x: x.get('fetched_at', ''), reverse=True)
         return items
     except Exception:
@@ -69,16 +96,13 @@ def run_live_search(keyword, skills):
     Fetch RSS and perform simple matching on the fly.
     """
     # Safety Filter: Block queries that contain NG words
-    NG_WORDS = ["sex", "porn", "xxx", "dead", "kill", "murder", "hate", "racist"] # Minimal example
+    NG_WORDS = ["sex", "porn", "xxx", "dead", "kill", "murder", "hate", "racist"] 
     if any(ng in keyword.lower() for ng in NG_WORDS):
         return []
 
-    # Job-focus Filter: Relaxed query to find more results.
-    # Removed 'allintitle:' as it was too strict for Google News.
-    # We rely on the NOISE_WORDS filter to remove blogs.
+    # Job-focus Filter
     job_query = f"{keyword} (求人 OR 採用 OR 募集 OR エンジニア)"
     encoded_keyword = urllib.parse.quote(job_query)
-    # Removing 'when:7d' to allow slightly older but relevant results if recent ones are scarce
     rss_url = f"https://news.google.com/rss/search?q={encoded_keyword}&hl=ja&gl=JP&ceid=JP:ja"
     
     feed = feedparser.parse(rss_url)
@@ -86,7 +110,7 @@ def run_live_search(keyword, skills):
     
     skills_list = [s.strip().lower() for s in skills.split(',') if s.strip()]
     
-    # Noise Filter: Expanded list to catch blogs/news
+    # Noise Filter
     NOISE_WORDS = [
         "まとめ", "比較", "ランキング", "おすすめ", "選", "学習", "スクール", 
         "講座", "入門", "とは", "ニュース", "解説", "相場", "理由",
@@ -94,59 +118,47 @@ def run_live_search(keyword, skills):
         "研究", "なぜ", "Tips", "エラー", "解決", "体験記", "開始"
     ]
     
-    # Domain Filter: Exclude known PR/News/School domains
+    # Domain Filter
     NOISE_DOMAINS = [
         "prtimes.jp", "atpress.ne.jp", "itmedia.co.jp", "nikkei.com", 
         "yahoo.co.jp", "impress.co.jp", "asahi.com", "mainichi.jp",
         "tech-camp.in", "runteq.jp", "samurai-engineer.jp", "python.jp",
-        "qiita.com", "zenn.dev", "note.com" # Exclude tech blogs
+        "qiita.com", "zenn.dev", "note.com"
     ]
 
-    for entry in feed.entries: # Remove limit here to find enough valid items
-        if len(results) >= 10: break # Collect up to 10 valid jobs
+    for entry in feed.entries:
+        if len(results) >= 10: break
         
         title = entry.title
         link = entry.link
         
-        # Safety Filter
         if any(ng in title.lower() for ng in NG_WORDS): continue
-        
-        # Noise Word Filter
         if any(noise in title for noise in NOISE_WORDS): continue
-        
-        # Domain Filter
         if any(domain in link for domain in NOISE_DOMAINS): continue
-
         
         # Simple Scoring Logic
-        score = 50 # Base score
+        score = 50 
         reason = "Basic Match"
-        
         title_lower = title.lower()
-        
-        # Boost for matching skills
         matched_skills = [s for s in skills_list if s in title_lower]
         if matched_skills:
             score += len(matched_skills) * 15
             reason = f"Matches skills: {', '.join(matched_skills)}"
         
-        # Cap score
         score = min(score, 99)
-        
         results.append({
             "title": title,
             "url": link,
-            "status": "LIVE", # Special status for demo
+            "status": "LIVE", 
             "score": str(score),
             "reason": reason,
             "fetched_at": datetime.now().isoformat()
         })
     
-    # Sort results
     results.sort(key=lambda x: int(x['score']), reverse=True)
     return results
 
-def generate_html(db_jobs, demo_jobs, keyword, skills):
+def generate_html(db_jobs, demo_jobs, keyword, skills, resume_text):
     
     # --- Generate Demo Results HTML ---
     demo_section = ""
@@ -171,6 +183,10 @@ def generate_html(db_jobs, demo_jobs, keyword, skills):
 
     # --- Generate DB Jobs HTML ---
     db_cards = generate_job_cards(db_jobs)
+    
+    # --- Resume Section Logic ---
+    default_resume = "## Professional Summary\\nBackend Engineer... (Edit this area)"
+    display_resume = resume_text if resume_text else default_resume
 
     return f"""
     <!DOCTYPE html>
@@ -193,6 +209,33 @@ def generate_html(db_jobs, demo_jobs, keyword, skills):
                 <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">Your Scout AI 🤖</h1>
                 <p class="text-lg text-gray-600">Analyze, Select, and Win.</p>
             </header>
+            
+            <!-- Resume Management Section -->
+            <section class="bg-white rounded-xl shadow p-6 mb-8 border border-gray-200">
+                <details>
+                    <summary class="cursor-pointer font-bold text-gray-700 flex justify-between items-center">
+                        <span>📄 My Resume & Match Settings</span>
+                        <span class="text-blue-500 text-sm">View / Edit</span>
+                    </summary>
+                    <div class="mt-4">
+                        <form method="POST">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Resume Content (Markdown supported)</label>
+                            <textarea name="resume_text" rows="10" class="w-full p-3 border rounded-lg font-mono text-sm bg-gray-50 mb-3 focus:ring-2 focus:ring-blue-500">{display_resume}</textarea>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                                    Save Resume Logic
+                                </button>
+                            </div>
+                        </form>
+                        <div class="mt-6 pt-6 border-t border-gray-100">
+                            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Current Resume Preview</h3>
+                            <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border border-gray-200 whitespace-pre-wrap">
+{display_resume}
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </section>
             
             <!-- Interactive Demo Form -->
             <section class="bg-white rounded-xl shadow-lg p-8 mb-12 border border-gray-100">
