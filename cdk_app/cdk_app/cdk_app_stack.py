@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_events as events,
     aws_events_targets as targets,
     aws_lambda_event_sources as lambda_sources,
+    CfnOutput,
 )
 from constructs import Construct
 import os
@@ -75,6 +76,31 @@ class CdkAppStack(Stack):
             }
         )
         table.grant_read_write_data(notifier_fn)
+
+        # 4. Viewer Function (Web Dashboard)
+        viewer_fn = _lambda.DockerImageFunction(
+            self, "ViewerFunction",
+            code=_lambda.DockerImageCode.from_image_asset(
+                directory="../app",
+                cmd=["viewer.handler"]
+            ),
+            architecture=_lambda.Architecture.X86_64,
+            timeout=Duration.seconds(30),
+            environment={
+                "TABLE_NAME": table.table_name
+            }
+        )
+        
+        # Enable Function URL (Public)
+        viewer_url = viewer_fn.add_function_url(
+            auth_type=_lambda.FunctionUrlAuthType.NONE
+        )
+        
+        # Permissions
+        table.grant_read_data(viewer_fn) # Viewer only needs read access
+        
+        # Outputs
+        CfnOutput(self, "ViewerUrl", value=viewer_url.url)
 
         # 3. Triggers
 

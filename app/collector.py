@@ -74,10 +74,13 @@ def handler(event, context):
     # Example feeds. In production, these might be loaded from another DB or Config.
     # Using 'Hacker News: Who is hiring?' search for 'python' as a demo source
     TARGET_FEEDS = [
-        "https://hnrss.org/newest?q=hiring+python", # Specific
-        "https://hnrss.org/newest?q=hiring",        # Broader
-        "https://hnrss.org/whoishiring/jobs",     # Monthly Who is hiring
-        "https://hnrss.org/newest?q=remote",       # Remote jobs
+        # Google News RSS (Japanese queries)
+        # "Python Engineer Jobs" (last 7 days)
+        "https://news.google.com/rss/search?q=Python+%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2+%E6%B1%82%E4%BA%BA+when:7d&hl=ja&gl=JP&ceid=JP:ja",
+        # "Web Engineer Recruit" (last 7 days)
+        "https://news.google.com/rss/search?q=Web%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2+%E6%8E%A1%E7%94%A8+when:7d&hl=ja&gl=JP&ceid=JP:ja",
+        # "Remote Work Engineer" (last 7 days)
+        "https://news.google.com/rss/search?q=%E3%83%AA%E3%83%A2%E3%83%BC%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF+%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2+when:7d&hl=ja&gl=JP&ceid=JP:ja",
     ]
     
     total_new_jobs = 0
