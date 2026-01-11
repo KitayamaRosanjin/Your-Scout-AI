@@ -1,5 +1,5 @@
 # Your Scout AI 
-
+https://g2euc27ywdy75lppplx646nrca0exeix.lambda-url.ap-northeast-1.on.aws/
 **"No more spray and pray. Analyze, Select, and Win."**
 
 自分にマッチする（勝てる）求人だけをAIが選定して通知する、20代エンジニアのための転職支援SaaS。
