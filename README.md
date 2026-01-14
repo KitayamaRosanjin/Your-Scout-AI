@@ -11,16 +11,16 @@ https://g2euc27ywdy75lppplx646nrca0exeix.lambda-url.ap-northeast-1.on.aws/
 
 ## Background (開発背景)
 
-「転職回数が多いと、書類選考で弾かれやすい」
-そんなハンデを覆すには、**「自分のスキルセットと企業の募集用件が完璧にマッチする場所」**をピンポイントで攻めるしかありません。
+
+そんなハンデを覆すには、「自分のスキルセットと企業の募集用件が完璧にマッチする場所」をピンポイントで攻めるしかありません。
 しかし、毎日求人サイトを目視で巡回し、募集要項を読み込むのは非効率です。
 
-そこで、**「AIが私の代わりに24時間求人を監視し、勝率の高いカードだけを配ってくれる」** システムを開発しました。
+そこで、「AIが私の代わりに24時間求人を監視し、勝率の高いカードだけを配ってくれる」 システムを開発しました。
 
 ## Architecture
 
-完全サーバーレス・アーキテクチャを採用し、**維持費ほぼ0円**を実現しています。
-Python 3.14の最新機能を利用するため、Lambdaは**コンテナイメージ (Docker)** でデプロイしています。
+完全サーバーレス・アーキテクチャを採用し、維持費ほぼ0円を実現しています。
+Python 3.14の最新機能を利用するため、Lambdaはコンテナイメージ (Docker)でデプロイしています。
 
 ```mermaid
 graph TD
@@ -79,10 +79,10 @@ cd cdk_app
 cdk deploy
 ```
 
-##  Author
-**KitayamaRosanjin**
-*   20代 / エンジニア (Ex-事務職)
-*   「ないものは作る」精神でSaaS開発に挑戦中。
+  Author
+KitayamaRosanjin
+20代 / エンジニア (Ex-事務職)
+「ないものは作る」精神でSaaS開発に挑戦中。
 
 ---
 *This project serves as a technical portfolio demonstrating Full-Stack Serverless capabilities.*
