@@ -51,7 +51,7 @@ graph TD
 1.  **Smart Collection**: RSSフィード等から自動で求人を収集。`ConditionExpression` を用いた効率的な重複排除。
 2.  **AI Matching**: 求人の「必須スキル」「歓迎スキル」を抽出し、事前登録したレジュメと照合。「勝てる確率」をスコアリング。
 3.  **Real-time Notification**: マッチ度が高い求人が見つかった瞬間、DynamoDB Streams駆動で通知。
-4.  **Interactive Live Demo**: 面接官がその場で検索・体験できるWebダッシュボード機能。
+4.  **Interactive Live Demo**: 使用者がその場で検索・体験できるWebダッシュボード機能。
     *   **Lambda Function URL** を用いたサーバーレス配信。
     *   **Safety & Domain Filter**: 不適切なコンテンツやプレスリリース記事を自動で除外するフィルタリングエンジン搭載。
     *   [Live Demo URL](https://g2euc27ywdy75lppplx646nrca0exeix.lambda-url.ap-northeast-1.on.aws/)
