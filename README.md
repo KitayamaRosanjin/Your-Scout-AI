@@ -3,7 +3,7 @@ https://g2euc27ywdy75lppplx646nrca0exeix.lambda-url.ap-northeast-1.on.aws/
 "No more spray and pray. Analyze, Select, and Win."
 
 自分にマッチする（勝てる）求人だけをAIが選定して通知する、20代エンジニアのための転職支援SaaS。
-（非IT出身・転職回数多めの自身の課題を解決するために開発）
+（非IT出身・転職回数多めの自身の課題を解決するために開発中）
 
 ![Architecture](https://img.shields.io/badge/Architecture-Serverless-orange)
 ![Python](https://img.shields.io/badge/Python-3.14-blue)
@@ -15,8 +15,8 @@ https://g2euc27ywdy75lppplx646nrca0exeix.lambda-url.ap-northeast-1.on.aws/
 そんなハンデを覆すには、「自分のスキルセットと企業の募集用件が完璧にマッチする場所」をピンポイントで攻めるしかありません。
 しかし、毎日求人サイトを目視で巡回し、募集要項を読み込むのは非効率です。
 
-そこで、「AIが私の代わりに24時間求人を監視し、勝率の高いカードだけを配ってくれる」 システムを開発しました。
-
+そこで、「AIが私の代わりに24時間求人を監視し、勝率の高いカードだけを配ってくれる」 システムを開発しております。
+現状は入力した技術やスキルの記事やニュースを収集するものになっており、求人だけに絞っていくことが課題。
 ## Architecture
 
 完全サーバーレス・アーキテクチャを採用し、維持費ほぼ0円を実現しています。
